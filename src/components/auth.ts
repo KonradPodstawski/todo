@@ -85,6 +85,7 @@ export async function checkAuthStatus() {
     const authControls = document.querySelector<HTMLDivElement>('#auth-controls');
     const headerBar = document.querySelector<HTMLDivElement>('#header-bar');
     const logoutButton = document.querySelector<HTMLButtonElement>('#logout-button');
+    const projectContent = document.querySelector<HTMLDivElement>('#project-content');
 
     if (authForms && authControls && headerBar && logoutButton && authMessage) {
         if (user) {
