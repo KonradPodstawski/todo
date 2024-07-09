@@ -75,9 +75,44 @@ export async function loadUsers() {
 }
 
 async function loadTasks() {
-  const tasks = await TaskService.getAll();
-  const taskList = document.querySelector<HTMLDivElement>('#task-list');
-  if (taskList) {
-    taskList.innerHTML = tasks.map(t => `<div>${t.name}: ${t.description}</div>`).join('');
+    const tasks = await TaskService.getAll();
+    const taskList = document.querySelector<HTMLDivElement>('#task-list');
+    if (taskList) {
+      taskList.innerHTML = tasks.map(t => `
+        <div class="border p-2 rounded my-2">
+          <h3 class="text-lg">${t.name}</h3>
+          <p>${t.description}</p>
+          <p>Priority: ${t.priority}</p>
+          <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editTask(${t.id})">Edit</button>
+          <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
+        </div>
+      `).join('');
+    }
   }
-}
+
+  window.editTask = async (id: number) => {
+    const task = await TaskService.getById(id);
+    (document.querySelector<HTMLInputElement>('#task-name')!).value = task.name;
+    (document.querySelector<HTMLTextAreaElement>('#task-description')!).value = task.description;
+    (document.querySelector<HTMLSelectElement>('#task-priority')!).value = task.priority;
+    (document.querySelector<HTMLSelectElement>('#task-story')!).value = task.story_id.toString();
+    (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value = task.estimated_time;
+    (document.querySelector<HTMLSelectElement>('#task-user')!).value = task.responsible_user_id || '';
+  
+    document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      task.name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
+      task.description = (document.querySelector<HTMLTextAreaElement>('#task-description')!).value;
+      task.priority = (document.querySelector<HTMLSelectElement>('#task-priority')!).value as 'niski' | 'średni' | 'wysoki';
+      task.story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
+      task.estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
+      task.responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
+      await TaskService.update(task);
+      await loadTasks();
+    });
+  }
+  
+  window.deleteTask = async (id: number) => {
+    await TaskService.delete(id);
+    await loadTasks();
+  }

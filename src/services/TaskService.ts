@@ -17,6 +17,12 @@ export interface Task {
 export class TaskService {
   private static table = 'tasks';
 
+  static async getById(id: number): Promise<Task> {
+    const { data, error } = await supabase.from(this.table).select('*').eq('id', id).single();
+    if (error) throw new Error(error.message);
+    return data as Task;
+  }
+
   static async getAll(): Promise<Task[]> {
     const { data, error } = await supabase.from(this.table).select('*');
     if (error) throw new Error(error.message);

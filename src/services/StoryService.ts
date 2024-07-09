@@ -14,6 +14,12 @@ export interface Story {
 export class StoryService {
   private static table = 'stories';
 
+  static async getById(id: number): Promise<Story> {
+    const { data, error } = await supabase.from(this.table).select('*').eq('id', id).single();
+    if (error) throw new Error(error.message);
+    return data as Story;
+  }
+
   static async getAll(): Promise<Story[]> {
     const { data, error } = await supabase.from(this.table).select('*');
     if (error) throw new Error(error.message);

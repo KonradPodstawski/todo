@@ -75,13 +75,34 @@ export async function loadStories() {
         <h3 class="text-lg">${s.name}</h3>
         <p>${s.description}</p>
         <p>Priority: ${s.priority}</p>
+        <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
         <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
       </div>
     `).join('');
   }
 }
 
+window.editStory = async (id: number) => {
+  const story = await StoryService.getById(id);
+  (document.querySelector<HTMLInputElement>('#story-name')!).value = story.name;
+  (document.querySelector<HTMLTextAreaElement>('#story-description')!).value = story.description;
+  (document.querySelector<HTMLSelectElement>('#story-priority')!).value = story.priority;
+  (document.querySelector<HTMLSelectElement>('#story-project')!).value = story.project_id.toString();
+  (document.querySelector<HTMLSelectElement>('#story-owner')!).value = story.owner_id;
+
+  document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    story.name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
+    story.description = (document.querySelector<HTMLTextAreaElement>('#story-description')!).value;
+    story.priority = (document.querySelector<HTMLSelectElement>('#story-priority')!).value as 'niski' | 'średni' | 'wysoki';
+    story.project_id = parseInt((document.querySelector<HTMLSelectElement>('#story-project')!).value);
+    story.owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!).value;
+    await StoryService.update(story);
+    await loadStories();
+  });
+}
+
 window.deleteStory = async (id: number) => {
   await StoryService.delete(id);
-  loadStories();
-};
+  await loadStories();
+}

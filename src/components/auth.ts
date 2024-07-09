@@ -83,6 +83,7 @@ export async function checkAuthStatus() {
     const projectContainer = document.querySelector<HTMLDivElement>('#project-container');
     const storyContainer = document.querySelector<HTMLDivElement>('#story-container');
     const taskContainer = document.querySelector<HTMLDivElement>('#task-container');
+    const titlePage = document.querySelector<HTMLDivElement>('#title-page');
 
     if (user) {
         isAuthenticated = true;
@@ -92,6 +93,7 @@ export async function checkAuthStatus() {
         projectContainer!.classList.remove('hidden');
         storyContainer!.classList.remove('hidden');
         taskContainer!.classList.remove('hidden');
+        titlePage!.classList.add('hidden');
         authMessage!.innerText = `Welcome, ${user.email}`;
 
     } else {
@@ -102,6 +104,7 @@ export async function checkAuthStatus() {
         projectContainer!.classList.add('hidden');
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');
+        titlePage!.classList.remove('hidden');
         authMessage!.innerText = '';
         isAuthenticated = false;
     }

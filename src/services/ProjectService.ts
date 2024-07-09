@@ -9,6 +9,12 @@ export interface Project {
 export class ProjectService {
   private static table = 'projects';
 
+  static async getById(id: number): Promise<Project> {
+    const { data, error } = await supabase.from(this.table).select('*').eq('id', id).single();
+    if (error) throw new Error(error.message);
+    return data as Project;
+  }
+
   static async getAll(): Promise<Project[]> {
     const { data, error } = await supabase.from(this.table).select('*');
     if (error) throw new Error(error.message);
