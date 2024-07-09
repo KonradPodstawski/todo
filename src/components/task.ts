@@ -2,6 +2,7 @@ import { TaskService, Task } from '../services/TaskService.ts';
 import { StoryService } from '../services/StoryService.ts';
 import { UserService } from '../services/UserService.ts';
 import { getNextID } from '../utils/utils.ts';
+import { loadOwners, loadProjects } from './story.ts';
 
 export function getTaskHtml() {
   return `
@@ -24,7 +25,15 @@ export function getTaskHtml() {
   `;
 }
 
-export function setupTaskManagement() {
+export async function setupTaskManagement() {
+ document.querySelector<HTMLFormElement>('#task-name')?.addEventListener('mouseover', async (e) => {
+    await loadProjects();
+    await loadStories();
+    await loadTasks();
+    await loadOwners();
+    await loadStories();
+
+  });
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
@@ -33,16 +42,23 @@ export function setupTaskManagement() {
     const story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
     const responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
+    console.log(story_id)
     await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id });
-    loadTasks();
+    await loadProjects();
+    await loadStories();
+    await loadTasks();
+    await loadOwners();
+    await loadStories();
   });
 
-  loadStories();
-  loadUsers();
-  loadTasks();
+  await loadProjects();
+  await loadStories();
+  await loadTasks();
+  await loadOwners();
+  await loadStories();
 }
 
-async function loadStories() {
+export async function loadStories() {
   const stories = await StoryService.getAll();
   const storySelect = document.querySelector<HTMLSelectElement>('#task-story');
   if (storySelect) {
@@ -50,7 +66,7 @@ async function loadStories() {
   }
 }
 
-async function loadUsers() {
+export async function loadUsers() {
   const users = await UserService.getAll();
   const userSelect = document.querySelector<HTMLSelectElement>('#task-user');
   if (userSelect) {

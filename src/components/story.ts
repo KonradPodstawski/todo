@@ -24,7 +24,10 @@ export function getStoryHtml() {
   `;
 }
 
-export function setupStoryManagement() {
+export async function setupStoryManagement() {
+  document.querySelector<HTMLFormElement>('#story-name')?.addEventListener('mouseover', async (e) => {
+    await loadProjects();
+  });
   document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
@@ -33,23 +36,29 @@ export function setupStoryManagement() {
     const project_id = parseInt((document.querySelector<HTMLSelectElement>('#story-project')!).value);
     const owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!).value;
     await StoryService.create({ id: getNextID(), name, description, priority, project_id, created_at: (new Date()).toISOString(), status: 'todo', owner_id });
-    loadStories();
+    await loadProjects();
+    await loadOwners();
+    await loadStories();
   });
 
-  loadProjects();
-  loadOwners();
-  loadStories();
+  await loadProjects();
+  await loadOwners();
+  await loadStories();
+}
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function loadProjects() {
+export async function loadProjects() {
   const projects = await ProjectService.getAll();
+  sleep(1000);
   const projectSelect = document.querySelector<HTMLSelectElement>('#story-project');
   if (projectSelect) {
     projectSelect.innerHTML = projects.map(project => `<option value="${project.id}">${project.name}</option>`).join('');
   }
 }
 
-async function loadOwners() {
+export async function loadOwners() {
   const users = await UserService.getAll();
   const ownerSelect = document.querySelector<HTMLSelectElement>('#story-owner');
   if (ownerSelect) {
@@ -57,7 +66,7 @@ async function loadOwners() {
   }
 }
 
-async function loadStories() {
+export async function loadStories() {
   const stories = await StoryService.getAll();
   const storyList = document.querySelector<HTMLDivElement>('#story-list');
   if (storyList) {

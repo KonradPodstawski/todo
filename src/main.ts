@@ -22,11 +22,3 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 setupAuth();
 checkAuthStatus();
-if (getIAuthenticated()) {
-    document.querySelector<HTMLDivElement>('#project-container')!.classList.remove('hidden');
-    document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
-    document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
-    setupProjectManagement();
-    setupStoryManagement();
-    setupTaskManagement();
-}

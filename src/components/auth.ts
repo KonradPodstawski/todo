@@ -1,4 +1,7 @@
 import { supabase } from '../supabase.ts';
+import { setupProjectManagement } from './projects.ts';
+import { setupStoryManagement } from './story.ts';
+import { setupTaskManagement } from './task.ts';
 
 let isAuthenticated = false;
 
@@ -58,9 +61,7 @@ export async function logIn(email: string, password: string) {
         email,
         password,
     });
-    if (data) {
-        isAuthenticated = true;
-    }
+    await setUpManagers();
     return { data, error };
 }
 
@@ -69,7 +70,6 @@ export async function logOut() {
     if (error) {
         console.error('Error logging out:', error);
     } else {
-        isAuthenticated = false;
         checkAuthStatus();
     }
 }
@@ -93,6 +93,7 @@ export async function checkAuthStatus() {
         storyContainer!.classList.remove('hidden');
         taskContainer!.classList.remove('hidden');
         authMessage!.innerText = `Welcome, ${user.email}`;
+
     } else {
         isAuthenticated = false;
         authForms!.classList.remove('hidden');
@@ -102,6 +103,7 @@ export async function checkAuthStatus() {
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');
         authMessage!.innerText = '';
+        isAuthenticated = false;
     }
 }
 
@@ -159,4 +161,13 @@ export function setupAuth() {
 
         checkAuthStatus();
     });
+}
+
+export async function setUpManagers() {
+    document.querySelector<HTMLDivElement>('#project-container')!.classList.remove('hidden');
+    document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
+    document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
+    await setupProjectManagement();
+    await setupStoryManagement();
+    await setupTaskManagement();
 }

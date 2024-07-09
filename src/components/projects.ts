@@ -1,5 +1,7 @@
 import { ProjectService, Project } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
+import { loadStories } from './story.ts';
+import { loadUsers } from './task.ts';
 
 export function getProjectHtml() {
   return `
@@ -14,16 +16,20 @@ export function getProjectHtml() {
   `;
 }
 
-export function setupProjectManagement() {
+export async function setupProjectManagement() {
   document.querySelector<HTMLFormElement>('#project-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#project-name')!).value;
     const description = (document.querySelector<HTMLTextAreaElement>('#project-description')!).value;
     await ProjectService.create({ id: getNextID(), name, description });
-    loadProjects();
+    await loadProjects();
+    await loadStories();
+    await loadUsers();
   });
 
-  loadProjects();
+  await loadProjects();
+  await loadStories();
+  await loadUsers();
 }
 
 async function loadProjects() {
