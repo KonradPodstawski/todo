@@ -1,7 +1,7 @@
 import { supabase } from '../supabase.ts';
 
 export function getAuthHtml() {
-    return `
+  return `
     <div id="auth-forms" class="mt-8 overflow-hidden relative w-full h-full">
         <div id="carousel-content" class="flex transition-transform duration-500">
             <div id="signup-form" class="w-full p-4">
@@ -42,22 +42,13 @@ export async function signUp(email: string, password: string, firstName: string,
 
     const { data, error: dbError } = await supabase
         .from('users')
-        .insert([{ id: user.user!.id, first_name: firstName, last_name: lastName }]);
+        .insert([{ id: user.user!.id, first_name: firstName, last_name: lastName, role: 'admin' }]);
 
     if (dbError) {
         return { error: dbError.message };
     }
 
-    const tableName = `user_${user.user!.id}_data`;
-    const { error: tableError } = await supabase.rpc('create_user_table', {
-        table_name: tableName,
-    });
-
-    if (tableError) {
-        return { error: tableError.message };
-    }
-
-    return { message: 'User registered and table created successfully' };
+    return { message: 'User registered successfully' };
 }
 
 export async function logIn(email: string, password: string) {
