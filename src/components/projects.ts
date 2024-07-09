@@ -1,4 +1,5 @@
 import { ProjectService, Project } from '../services/ProjectService.ts';
+import { getNextID } from '../utils/utils.ts';
 
 export function getProjectHtml() {
   return `
@@ -18,7 +19,7 @@ export function setupProjectManagement() {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#project-name')!).value;
     const description = (document.querySelector<HTMLTextAreaElement>('#project-description')!).value;
-    await ProjectService.create({ id: 0, name, description });
+    await ProjectService.create({ id: getNextID(), name, description });
     loadProjects();
   });
 
