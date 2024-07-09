@@ -1,4 +1,4 @@
-import { ProjectService, Project } from '.././services/ProjectService.ts';
+import { ProjectService, Project } from '../services/ProjectService.ts';
 
 export function getProjectHtml() {
   return `

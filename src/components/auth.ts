@@ -1,5 +1,7 @@
 import { supabase } from '../supabase.ts';
 
+let isAuthenticated = false;
+
 export function getAuthHtml() {
   return `
     <div id="auth-forms" class="mt-8 overflow-hidden relative w-full h-full">
@@ -56,6 +58,9 @@ export async function logIn(email: string, password: string) {
         email,
         password,
     });
+    if (data) {
+        isAuthenticated = true;
+    }
     return { data, error };
 }
 
@@ -64,6 +69,7 @@ export async function logOut() {
     if (error) {
         console.error('Error logging out:', error);
     } else {
+        isAuthenticated = false;
         checkAuthStatus();
     }
 }
@@ -74,19 +80,33 @@ export async function checkAuthStatus() {
     const authForms = document.querySelector<HTMLDivElement>('#auth-forms');
     const authControls = document.querySelector<HTMLDivElement>('#auth-controls');
     const headerBar = document.querySelector<HTMLDivElement>('#header-bar');
-    const logoutButton = document.querySelector<HTMLButtonElement>('#logout-button');
+    const projectContainer = document.querySelector<HTMLDivElement>('#project-container');
+    const storyContainer = document.querySelector<HTMLDivElement>('#story-container');
+    const taskContainer = document.querySelector<HTMLDivElement>('#task-container');
 
     if (user) {
+        isAuthenticated = true;
         authForms!.classList.add('hidden');
         authControls!.classList.add('hidden');
         headerBar!.classList.remove('hidden');
+        projectContainer!.classList.remove('hidden');
+        storyContainer!.classList.remove('hidden');
+        taskContainer!.classList.remove('hidden');
         authMessage!.innerText = `Welcome, ${user.email}`;
     } else {
+        isAuthenticated = false;
         authForms!.classList.remove('hidden');
         authControls!.classList.remove('hidden');
         headerBar!.classList.add('hidden');
+        projectContainer!.classList.add('hidden');
+        storyContainer!.classList.add('hidden');
+        taskContainer!.classList.add('hidden');
         authMessage!.innerText = '';
     }
+}
+
+export function getIAuthenticated(): boolean {
+    return isAuthenticated;
 }
 
 export function setupAuth() {
