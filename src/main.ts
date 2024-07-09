@@ -1,17 +1,28 @@
 import './style.css';
 import { setupAuth } from './components/auth.ts';
-import { getTitlePageHtml } from './components/titlePage.ts';
 import { getHeaderBarHtml } from './components/headerBar.ts';
-import { ProjectService } from './services/projectService';
-import { Project } from './models/project';
+import { getProjectDetailHtml, renderProjects } from './components/projectDetail.ts';
+import { getStoryDetailHtml, renderStories } from './components/storyDetail.ts';
+import { getKanbanBoardHtml, loadKanbanBoard } from './components/kanbanBoard.ts';
+import { ProjectService } from './services/ProjectService.ts';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     ${getHeaderBarHtml()}
-    ${getTitlePageHtml()}
+    <div id="project-content">
+        ${getProjectDetailHtml()}
+        ${getStoryDetailHtml()}
+        ${getKanbanBoardHtml()}
+    </div>
 `;
 
 setupAuth();
 
-// Mock project selection (should only be done after login)
-const mockProject = new Project(1, 'Project Alpha', 'Description of Project Alpha');
-ProjectService.setCurrentProject(mockProject);
+// Mock project selection and load data
+async function initializeApp() {
+    await ProjectService.setCurrentProject(1);
+    renderProjects();
+    renderStories();
+    loadKanbanBoard();
+}
+
+initializeApp();

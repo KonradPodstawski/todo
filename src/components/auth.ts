@@ -1,5 +1,6 @@
 import { supabase } from '../supabase.ts';
-import { loadStories, renderProjectContent } from './titlePage';
+import { ProjectService } from '../services/ProjectService';
+import { renderProjects } from './projectDetail';
 
 export function getAuthHtml() {
     return `
@@ -11,21 +12,21 @@ export function getAuthHtml() {
                     <input type="password" id="signup-password" placeholder="Password" class="border p-2 rounded w-full"/>
                     <input type="text" id="signup-first-name" placeholder="First Name" class="border p-2 rounded w-full"/>
                     <input type="text" id="signup-last-name" placeholder="Last Name" class="border p-2 rounded w-full"/>
-                    <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Sign Up</button>
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full hover:bg-blue-700">Sign Up</button>
                 </form>
             </div>
             <div id="login-form" class="w-full p-4">
                 <form class="space-y-4" id="login-form-element">
                     <input type="email" id="login-email" placeholder="Email" class="border p-2 rounded w-full"/>
                     <input type="password" id="login-password" placeholder="Password" class="border p-2 rounded w-full"/>
-                    <button type="submit" class="bg-green-600 text-white p-2 rounded w-full">Log In</button>
+                    <button type="submit" class="bg-green-600 text-white p-2 rounded w-full hover:bg-green-700">Log In</button>
                 </form>
             </div>
         </div>
     </div>
     <div id="auth-controls" class="mt-4">
-        <button id="toggle-signup" class="mr-2 bg-blue-500 text-white p-2 rounded">Sign Up</button>
-        <button id="toggle-login" class="bg-green-500 text-white p-2 rounded">Log In</button>
+        <button id="toggle-signup" class="mr-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Sign Up</button>
+        <button id="toggle-login" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Log In</button>
     </div>
     <div id="auth-message" class="mt-4 text-red-500"></div>
     `;
@@ -49,16 +50,7 @@ export async function signUp(email: string, password: string, firstName: string,
         return { error: dbError.message };
     }
 
-    const tableName = `user_${user.user!.id}_data`;
-    const { error: tableError } = await supabase.rpc('create_user_table', {
-        table_name: tableName,
-    });
-
-    if (tableError) {
-        return { error: tableError.message };
-    }
-
-    return { message: 'User registered and table created successfully' };
+    return { message: 'User registered successfully' };
 }
 
 export async function logIn(email: string, password: string) {
@@ -87,20 +79,20 @@ export async function checkAuthStatus() {
     const logoutButton = document.querySelector<HTMLButtonElement>('#logout-button');
     const projectContent = document.querySelector<HTMLDivElement>('#project-content');
 
-    if (authForms && authControls && headerBar && logoutButton && authMessage) {
+    if (authForms && authControls && headerBar && logoutButton && authMessage && projectContent) {
         if (user) {
             authForms.classList.add('hidden');
             authControls.classList.add('hidden');
             headerBar.classList.remove('hidden');
             authMessage.innerText = `Welcome, ${user.email}`;
-            projectContent!.classList.remove('hidden');
-            renderProjectContent();
+            projectContent.classList.remove('hidden');
+            renderProjects();
         } else {
             authForms.classList.remove('hidden');
             authControls.classList.remove('hidden');
             headerBar.classList.add('hidden');
             authMessage.innerText = '';
-            projectContent!.classList.add('hidden');
+            projectContent.classList.add('hidden');
         }
     }
 }
