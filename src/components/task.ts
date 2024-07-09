@@ -1,6 +1,7 @@
 import { TaskService, Task } from '../services/TaskService.ts';
 import { StoryService } from '../services/StoryService.ts';
 import { UserService } from '../services/UserService.ts';
+import { getNextID } from '../utils/utils.ts';
 
 export function getTaskHtml() {
   return `
@@ -32,7 +33,7 @@ export function setupTaskManagement() {
     const story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
     const responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
-    await TaskService.create({ id: 0, name, description, priority, story_id, estimated_time, status: 'todo', created_at: '', responsible_user_id });
+    await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id });
     loadTasks();
   });
 

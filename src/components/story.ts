@@ -1,9 +1,12 @@
 import { StoryService, Story } from '../services/StoryService.ts';
 import { UserService } from '../services/UserService.ts';
+import { ProjectService } from '../services/ProjectService.ts';
+import { getNextID } from '../utils/utils.ts';
 
 export function getStoryHtml() {
   return `
-    <div id="story-management">
+    <div id="story-management" class="my-4 p-4 border rounded">
+      <h2 class="text-xl mb-4">Story Management</h2>
       <form id="story-form" class="space-y-4">
         <input type="text" id="story-name" placeholder="Story Name" class="border p-2 rounded w-full" />
         <textarea id="story-description" placeholder="Story Description" class="border p-2 rounded w-full"></textarea>
@@ -12,6 +15,7 @@ export function getStoryHtml() {
           <option value="średni">Średni</option>
           <option value="wysoki">Wysoki</option>
         </select>
+        <select id="story-project" class="border p-2 rounded w-full"></select>
         <select id="story-owner" class="border p-2 rounded w-full"></select>
         <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Story</button>
       </form>
@@ -26,13 +30,23 @@ export function setupStoryManagement() {
     const name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
     const description = (document.querySelector<HTMLTextAreaElement>('#story-description')!).value;
     const priority = (document.querySelector<HTMLSelectElement>('#story-priority')!).value as 'niski' | 'średni' | 'wysoki';
+    const project_id = parseInt((document.querySelector<HTMLSelectElement>('#story-project')!).value);
     const owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!).value;
-    await StoryService.create({ id: 0, name, description, priority, project_id: 1, created_at: '', status: 'todo', owner_id });
+    await StoryService.create({ id: getNextID(), name, description, priority, project_id, created_at: (new Date()).toISOString(), status: 'todo', owner_id });
     loadStories();
   });
 
+  loadProjects();
   loadOwners();
   loadStories();
+}
+
+async function loadProjects() {
+  const projects = await ProjectService.getAll();
+  const projectSelect = document.querySelector<HTMLSelectElement>('#story-project');
+  if (projectSelect) {
+    projectSelect.innerHTML = projects.map(project => `<option value="${project.id}">${project.name}</option>`).join('');
+  }
 }
 
 async function loadOwners() {
@@ -47,6 +61,18 @@ async function loadStories() {
   const stories = await StoryService.getAll();
   const storyList = document.querySelector<HTMLDivElement>('#story-list');
   if (storyList) {
-    storyList.innerHTML = stories.map(s => `<div>${s.name}: ${s.description}</div>`).join('');
+    storyList.innerHTML = stories.map(s => `
+      <div class="border p-2 rounded my-2">
+        <h3 class="text-lg">${s.name}</h3>
+        <p>${s.description}</p>
+        <p>Priority: ${s.priority}</p>
+        <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
+      </div>
+    `).join('');
   }
 }
+
+window.deleteStory = async (id: number) => {
+  await StoryService.delete(id);
+  loadStories();
+};
