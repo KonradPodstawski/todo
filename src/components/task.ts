@@ -3,6 +3,7 @@ import { StoryService } from '../services/StoryService.ts';
 import { UserService } from '../services/UserService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { loadOwners, loadProjects } from './story.ts';
+import { showModal } from './modal.ts';
 
 export function getTaskHtml() {
   return `
@@ -32,7 +33,6 @@ export async function setupTaskManagement() {
     await loadTasks();
     await loadOwners();
     await loadStories();
-
   });
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -42,7 +42,6 @@ export async function setupTaskManagement() {
     const story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
     const responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
-    console.log(story_id)
     await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id });
     await loadProjects();
     await loadStories();
@@ -88,31 +87,50 @@ async function loadTasks() {
         </div>
       `).join('');
     }
-  }
+}
 
-  window.editTask = async (id: number) => {
+window.editTask = async (id: number) => {
     const task = await TaskService.getById(id);
-    (document.querySelector<HTMLInputElement>('#task-name')!).value = task.name;
-    (document.querySelector<HTMLTextAreaElement>('#task-description')!).value = task.description;
-    (document.querySelector<HTMLSelectElement>('#task-priority')!).value = task.priority;
-    (document.querySelector<HTMLSelectElement>('#task-story')!).value = task.story_id.toString();
-    (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value = task.estimated_time;
-    (document.querySelector<HTMLSelectElement>('#task-user')!).value = task.responsible_user_id || '';
-  
-    document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      task.name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
-      task.description = (document.querySelector<HTMLTextAreaElement>('#task-description')!).value;
-      task.priority = (document.querySelector<HTMLSelectElement>('#task-priority')!).value as 'niski' | 'średni' | 'wysoki';
-      task.story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
-      task.estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
-      task.responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
-      await TaskService.update(task);
-      await loadTasks();
+    showModal(`
+        <h2 class="text-xl mb-4">Edit Task</h2>
+        <form id="modal-task-form" class="space-y-4">
+            <input type="text" id="modal-task-name" value="${task.name}" class="border p-2 rounded w-full" />
+            <textarea id="modal-task-description" class="border p-2 rounded w-full">${task.description}</textarea>
+            <select id="modal-task-priority" class="border p-2 rounded w-full">
+              <option value="niski" ${task.priority === 'niski' ? 'selected' : ''}>Niski</option>
+              <option value="średni" ${task.priority === 'średni' ? 'selected' : ''}>Średni</option>
+              <option value="wysoki" ${task.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
+            </select>
+            <select id="modal-task-story" class="border p-2 rounded w-full"></select>
+            <input type="text" id="modal-task-estimated-time" value="${task.estimated_time}" class="border p-2 rounded w-full" />
+            <select id="modal-task-user" class="border p-2 rounded w-full"></select>
+            <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Task</button>
+        </form>
+    `);
+    await loadStories();
+    await loadUsers();
+    document.querySelector<HTMLSelectElement>('#modal-task-story')!.value = task.story_id.toString();
+    document.querySelector<HTMLSelectElement>('#modal-task-user')!.value = task.responsible_user_id || '';
+    document.querySelector<HTMLFormElement>('#modal-task-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const updatedTask: Partial<Task> & { id: number } = {
+            id: task.id,
+            name: (document.querySelector<HTMLInputElement>('#modal-task-name')!).value,
+            description: (document.querySelector<HTMLTextAreaElement>('#modal-task-description')!).value,
+            priority: (document.querySelector<HTMLSelectElement>('#modal-task-priority')!).value as 'niski' | 'średni' | 'wysoki',
+            estimated_time: (document.querySelector<HTMLInputElement>('#modal-task-estimated-time')!).value,
+        };
+        const storyIdValue = (document.querySelector<HTMLSelectElement>('#modal-task-story')!).value;
+        if (storyIdValue) updatedTask.story_id = parseInt(storyIdValue);
+        const userIdValue = (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value;
+        if (userIdValue) updatedTask.responsible_user_id = userIdValue;
+        await TaskService.update(updatedTask);
+        document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
+        await loadTasks();
     });
   }
   
-  window.deleteTask = async (id: number) => {
-    await TaskService.delete(id);
-    await loadTasks();
-  }
+window.deleteTask = async (id: number) => {
+  await TaskService.delete(id);
+  await loadTasks();
+}

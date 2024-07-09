@@ -5,10 +5,12 @@ import { getHeaderBarHtml } from './components/headerBar.ts';
 import { getProjectHtml, setupProjectManagement } from './components/projects.ts';
 import { getStoryHtml, setupStoryManagement } from './components/story.ts';
 import { getTaskHtml, setupTaskManagement } from './components/task.ts';
+import { getModalHtml, setupModal } from './components/modal.ts';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     ${getHeaderBarHtml()}
     ${getTitlePageHtml()}
+    ${getModalHtml()}
     <div id="project-container" class="hidden">
         ${getProjectHtml()}
     </div>
@@ -22,3 +24,4 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
 setupAuth();
 checkAuthStatus();
+setupModal();

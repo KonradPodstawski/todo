@@ -2,6 +2,7 @@ import { ProjectService, Project } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { loadStories } from './story.ts';
 import { loadUsers } from './task.ts';
+import { showModal } from './modal.ts';
 
 export function getProjectHtml() {
   return `
@@ -32,7 +33,6 @@ export async function setupProjectManagement() {
   await loadUsers();
 }
 
-
 async function loadProjects() {
     const projects = await ProjectService.getAll();
     const projectList = document.querySelector<HTMLDivElement>('#project-list');
@@ -46,23 +46,29 @@ async function loadProjects() {
         </div>
       `).join('');
     }
-  }
-  
-window.editProject = async (id: number) => {
-const project = await ProjectService.getById(id);
-(document.querySelector<HTMLInputElement>('#project-name')!).value = project.name;
-(document.querySelector<HTMLTextAreaElement>('#project-description')!).value = project.description;
+}
 
-document.querySelector<HTMLFormElement>('#project-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    project.name = (document.querySelector<HTMLInputElement>('#project-name')!).value;
-    project.description = (document.querySelector<HTMLTextAreaElement>('#project-description')!).value;
-    await ProjectService.update(project);
-    await loadProjects();
-});
+window.editProject = async (id: number) => {
+    const project = await ProjectService.getById(id);
+    showModal(`
+        <h2 class="text-xl mb-4">Edit Project</h2>
+        <form id="modal-project-form" class="space-y-4">
+            <input type="text" id="modal-project-name" value="${project.name}" class="border p-2 rounded w-full" />
+            <textarea id="modal-project-description" class="border p-2 rounded w-full">${project.description}</textarea>
+            <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Project</button>
+        </form>
+    `);
+    document.querySelector<HTMLFormElement>('#modal-project-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        project.name = (document.querySelector<HTMLInputElement>('#modal-project-name')!).value;
+        project.description = (document.querySelector<HTMLTextAreaElement>('#modal-project-description')!).value;
+        await ProjectService.update(project);
+        document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
+        await loadProjects();
+    });
 }
 
 window.deleteProject = async (id: number) => {
-await ProjectService.delete(id);
-await loadProjects();
+    await ProjectService.delete(id);
+    await loadProjects();
 }

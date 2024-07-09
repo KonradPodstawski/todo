@@ -35,8 +35,12 @@ export class TaskService {
     return data as Task;
   }
 
-  static async update(task: Task): Promise<Task> {
-    const { data, error } = await supabase.from(this.table).update(task).eq('id', task.id).single();
+  static async update(task: Partial<Task> & { id: number }): Promise<Task> {
+    const updateData = { ...task };
+    // Remove fields if not provided
+    if (updateData.responsible_user_id === '') delete updateData.responsible_user_id;
+    if (updateData.story_id === null || updateData.story_id === undefined) delete updateData.story_id;
+    const { data, error } = await supabase.from(this.table).update(updateData).eq('id', task.id).single();
     if (error) throw new Error(error.message);
     return data as Task;
   }

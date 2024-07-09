@@ -2,6 +2,7 @@ import { StoryService, Story } from '../services/StoryService.ts';
 import { UserService } from '../services/UserService.ts';
 import { ProjectService } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
+import { showModal } from './modal.ts';
 
 export function getStoryHtml() {
   return `
@@ -45,13 +46,9 @@ export async function setupStoryManagement() {
   await loadOwners();
   await loadStories();
 }
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 export async function loadProjects() {
   const projects = await ProjectService.getAll();
-  sleep(1000);
   const projectSelect = document.querySelector<HTMLSelectElement>('#story-project');
   if (projectSelect) {
     projectSelect.innerHTML = projects.map(project => `<option value="${project.id}">${project.name}</option>`).join('');
@@ -84,23 +81,43 @@ export async function loadStories() {
 
 window.editStory = async (id: number) => {
   const story = await StoryService.getById(id);
-  (document.querySelector<HTMLInputElement>('#story-name')!).value = story.name;
-  (document.querySelector<HTMLTextAreaElement>('#story-description')!).value = story.description;
-  (document.querySelector<HTMLSelectElement>('#story-priority')!).value = story.priority;
-  (document.querySelector<HTMLSelectElement>('#story-project')!).value = story.project_id.toString();
-  (document.querySelector<HTMLSelectElement>('#story-owner')!).value = story.owner_id;
-
-  document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    story.name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
-    story.description = (document.querySelector<HTMLTextAreaElement>('#story-description')!).value;
-    story.priority = (document.querySelector<HTMLSelectElement>('#story-priority')!).value as 'niski' | 'średni' | 'wysoki';
-    story.project_id = parseInt((document.querySelector<HTMLSelectElement>('#story-project')!).value);
-    story.owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!).value;
-    await StoryService.update(story);
-    await loadStories();
+  showModal(`
+      <h2 class="text-xl mb-4">Edit Story</h2>
+      <form id="modal-story-form" class="space-y-4">
+          <input type="text" id="modal-story-name" value="${story.name}" class="border p-2 rounded w-full" />
+          <textarea id="modal-story-description" class="border p-2 rounded w-full">${story.description}</textarea>
+          <select id="modal-story-priority" class="border p-2 rounded w-full">
+            <option value="niski" ${story.priority === 'niski' ? 'selected' : ''}>Niski</option>
+            <option value="średni" ${story.priority === 'średni' ? 'selected' : ''}>Średni</option>
+            <option value="wysoki" ${story.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
+          </select>
+          <select id="modal-story-project" class="border p-2 rounded w-full"></select>
+          <select id="modal-story-owner" class="border p-2 rounded w-full"></select>
+          <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Story</button>
+      </form>
+  `);
+  await loadProjects();
+  await loadOwners();
+  document.querySelector<HTMLSelectElement>('#modal-story-project')!.value = story.project_id.toString();
+  document.querySelector<HTMLSelectElement>('#modal-story-owner')!.value = story.owner_id;
+  document.querySelector<HTMLFormElement>('#modal-story-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const updatedStory: Partial<Story> & { id: number } = {
+          id: story.id,
+          name: (document.querySelector<HTMLInputElement>('#modal-story-name')!).value,
+          description: (document.querySelector<HTMLTextAreaElement>('#modal-story-description')!).value,
+          priority: (document.querySelector<HTMLSelectElement>('#modal-story-priority')!).value as 'niski' | 'średni' | 'wysoki',
+      };
+      const projectIdValue = (document.querySelector<HTMLSelectElement>('#modal-story-project')!).value;
+      if (projectIdValue) updatedStory.project_id = parseInt(projectIdValue);
+      const ownerIdValue = (document.querySelector<HTMLSelectElement>('#modal-story-owner')!).value;
+      if (ownerIdValue) updatedStory.owner_id = ownerIdValue;
+      await StoryService.update(updatedStory);
+      document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
+      await loadStories();
   });
 }
+
 
 window.deleteStory = async (id: number) => {
   await StoryService.delete(id);
