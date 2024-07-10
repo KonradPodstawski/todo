@@ -147,7 +147,7 @@ window.editTask = async (id: number) => {
           description: (document.querySelector<HTMLTextAreaElement>('#modal-task-description')!).value,
           priority: (document.querySelector<HTMLSelectElement>('#modal-task-priority')!).value as 'niski' | 'średni' | 'wysoki',
           estimated_time: (document.querySelector<HTMLInputElement>('#modal-task-estimated-time')!).value,
-          responsible_user_id: (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value || null,
+          responsible_user_id: (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value || "",
           status: (document.querySelector<HTMLSelectElement>('#modal-task-status')!).value as 'todo' | 'doing' | 'done',
       };
 

@@ -1,6 +1,5 @@
 import './style.css';
 import { setupAuth, checkAuthStatus, getAuthHtml } from './components/auth.ts';
-import { getTitlePageHtml } from './components/titlePage.ts';
 import { getHeaderBarHtml } from './components/headerBar.ts';
 import { getProjectHtml } from './components/projects.ts';
 import { getStoryHtml} from './components/story.ts';

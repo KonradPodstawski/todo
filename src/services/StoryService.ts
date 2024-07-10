@@ -8,7 +8,7 @@ export interface Story {
   project_id: number;
   created_at: string;
   status: 'todo' | 'doing' | 'done';
-  owner_id: string;
+  owner_id?: string;
 }
 
 export class StoryService {

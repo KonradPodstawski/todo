@@ -19,7 +19,6 @@ export function getProjectHtml() {
   `;
 }
 
-
 export async function setupProjectManagement() {
   document.querySelector<HTMLFormElement>('#project-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
