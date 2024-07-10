@@ -26,6 +26,12 @@ export class StoryService {
     return data as Story[];
   }
 
+  static async getAllByProjectId(projectId: number): Promise<Story[]> {
+    const { data, error } = await supabase.from(this.table).select('*').eq('project_id', projectId);
+    if (error) throw new Error(error.message);
+    return data as Story[];
+  }
+
   static async create(story: Story): Promise<Story> {
     const { data, error } = await supabase.from(this.table).insert(story).single();
     if (error) throw new Error(error.message);
