@@ -43,6 +43,7 @@ async function loadProjects() {
           <p>${p.description}</p>
           <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editProject(${p.id})">Edit</button>
           <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteProject(${p.id})">Delete</button>
+          <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoProject(${p.id})">Info</button>
         </div>
       `).join('');
     }
@@ -71,4 +72,17 @@ window.editProject = async (id: number) => {
 window.deleteProject = async (id: number) => {
     await ProjectService.delete(id);
     await loadProjects();
+}
+
+window.infoProject = async (id: number) => {
+  const project = await ProjectService.getById(id);
+  showModal(`
+      <h2 class="text-xl mb-4">Project Info</h2>
+      <p><strong>Name:</strong> ${project.name}</p>
+      <p><strong>Description:</strong> ${project.description}</p>
+      <button id="modal-close" class="bg-red-500 text-white p-2 rounded mt-4">Close</button>
+  `);
+  document.querySelector<HTMLButtonElement>('#modal-close')?.addEventListener('click', () => {
+      document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
+  });
 }

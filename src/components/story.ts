@@ -1,5 +1,5 @@
 import { StoryService, Story } from '../services/StoryService.ts';
-import { UserService } from '../services/UserService.ts';
+import { UserService, User } from '../services/UserService.ts';
 import { ProjectService } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showModal } from './modal.ts';
@@ -74,6 +74,7 @@ export async function loadStories() {
         <p>Priority: ${s.priority}</p>
         <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
         <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
+        <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
       </div>
     `).join('');
   }
@@ -118,8 +119,26 @@ window.editStory = async (id: number) => {
   });
 }
 
-
 window.deleteStory = async (id: number) => {
   await StoryService.delete(id);
   await loadStories();
+}
+
+window.infoStory = async (id: number) => {
+  const story = await StoryService.getById(id);
+  const owner = await UserService.getById(story.owner_id);
+  showModal(`
+      <h2 class="text-xl mb-4">Story Info</h2>
+      <p><strong>Name:</strong> ${story.name}</p>
+      <p><strong>Description:</strong> ${story.description}</p>
+      <p><strong>Priority:</strong> ${story.priority}</p>
+      <p><strong>Project ID:</strong> ${story.project_id}</p>
+      <p><strong>Owner:</strong> ${owner.first_name} ${owner.last_name}</p>
+      <p><strong>Created At:</strong> ${story.created_at}</p>
+      <p><strong>Status:</strong> ${story.status}</p>
+      <button id="modal-close" class="bg-red-500 text-white p-2 rounded mt-4">Close</button>
+  `);
+  document.querySelector<HTMLButtonElement>('#modal-close')?.addEventListener('click', () => {
+      document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
+  });
 }
