@@ -41,10 +41,6 @@ export function getTaskHtml() {
 }
 
 export async function setupTaskManagement() {
-  document.querySelector<HTMLFormElement>('#task-name')?.addEventListener('mouseover', async (e) => {
-    await loadUsers();
-  });
-
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
@@ -64,11 +60,13 @@ export async function setupTaskManagement() {
     }
 
     await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id: null });
-    await loadTasks();
+    await loadTasksForStory(story_id);
   });
 
   await loadUsers();
-  await loadTasks();
+  if (currentStoryId) {
+    await loadTasksForStory(currentStoryId);
+  }
 }
 
 export async function loadUsers() {
@@ -79,8 +77,8 @@ export async function loadUsers() {
   }
 }
 
-export async function loadTasks() {
-  const tasks = await TaskService.getAll();
+export async function loadTasksForStory(storyId: number) {
+  const tasks = await TaskService.getAllByStoryId(storyId);
   const todoTasks = document.querySelector<HTMLDivElement>('#todo-tasks');
   const doingTasks = document.querySelector<HTMLDivElement>('#doing-tasks');
   const doneTasks = document.querySelector<HTMLDivElement>('#done-tasks');
@@ -171,13 +169,13 @@ window.editTask = async (id: number) => {
 
       await TaskService.update(updatedTask);
       document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
-      await loadTasks();
+      await loadTasksForStory(currentStoryId!);
   });
 }
 
 window.deleteTask = async (id: number) => {
   await TaskService.delete(id);
-  await loadTasks();
+  await loadTasksForStory(currentStoryId!);
 }
 
 window.infoTask = async (id: number) => {
@@ -202,7 +200,7 @@ window.infoTask = async (id: number) => {
 
 export async function showTasksForStory(storyId: number) {
   currentStoryId = storyId;
-  await loadTasks();
+  await loadTasksForStory(storyId);
 }
 
 window.showStories = () => {

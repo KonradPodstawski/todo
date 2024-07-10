@@ -1,8 +1,10 @@
 import { ProjectService, Project } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
-import { loadStories, showStoriesForProject } from './story.ts';
+import { showStoriesForProject } from './story.ts';
 import { loadUsers } from './task.ts';
 import { showModal } from './modal.ts';
+
+let currentProjectId: number | null = null;
 
 export function getProjectHtml() {
   return `
@@ -24,12 +26,10 @@ export async function setupProjectManagement() {
     const description = (document.querySelector<HTMLTextAreaElement>('#project-description')!).value;
     await ProjectService.create({ id: getNextID(), name, description });
     await loadProjects();
-    await loadStories();
     await loadUsers();
   });
 
   await loadProjects();
-  await loadStories();
   await loadUsers();
 }
 
@@ -89,8 +89,8 @@ window.infoProject = async (id: number) => {
 }
 
 window.selectProject = async (id: number) => {
+  currentProjectId = id;
   document.querySelector<HTMLDivElement>('#project-container')!.classList.add('hidden');
   document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
-  document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
   await showStoriesForProject(id);
 }

@@ -52,14 +52,15 @@ export async function setupStoryManagement() {
       return;
     }
     const project_id = currentProjectId;
-    const owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!)?.value || null;
-    await StoryService.create({ id: getNextID(), name, description, priority, project_id, created_at: (new Date()).toISOString(), status: 'todo', owner_id });
-    await loadStories();
+    await StoryService.create({ id: getNextID(), name, description, priority, project_id, created_at: (new Date()).toISOString(), status: 'todo', owner_id: null });
+    await loadStoriesForProject(project_id);
   });
 
   await loadProjects();
   await loadOwners();
-  await loadStories();
+  if (currentProjectId) {
+    await loadStoriesForProject(currentProjectId);
+  }
 }
 
 export async function loadProjects() {
@@ -78,8 +79,8 @@ export async function loadOwners() {
   }
 }
 
-export async function loadStories() {
-  const stories = await StoryService.getAll();
+export async function loadStoriesForProject(projectId: number) {
+  const stories = await StoryService.getAllByProjectId(projectId);
   const todoStories = document.querySelector<HTMLDivElement>('#todo-stories');
   const doingStories = document.querySelector<HTMLDivElement>('#doing-stories');
   const doneStories = document.querySelector<HTMLDivElement>('#done-stories');
@@ -141,13 +142,13 @@ window.editStory = async (id: number) => {
     };
     await StoryService.update(updatedStory);
     document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
-    await loadStories();
+    await loadStoriesForProject(currentProjectId!);
   });
 }
 
 window.deleteStory = async (id: number) => {
   await StoryService.delete(id);
-  await loadStories();
+  await loadStoriesForProject(currentProjectId!);
 }
 
 window.infoStory = async (id: number) => {
@@ -186,7 +187,7 @@ window.selectStory = async (id: number) => {
 
 export async function showStoriesForProject(projectId: number) {
   currentProjectId = projectId;
-  await loadStories();
+  await loadStoriesForProject(projectId);
 }
 
 window.showProjects = () => {
