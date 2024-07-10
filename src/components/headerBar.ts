@@ -2,12 +2,14 @@ import { UserService, User } from '../services/UserService.ts';
 
 export function getHeaderBarHtml() {
   return `
-    <div id="header-bar" class="bg-gray-800 text-white p-4 flex justify-between items-center hidden">
-        <div class="text-lg">Welcome</div>
-        <button id="logout-button" class="bg-red-500 text-white p-2 rounded">Log Out</button>
+    <div id="header-bar" class="bg-gray-800 text-white p-4 flex justify-between items-center hidden dark:bg-gray-900">
+        <button id="theme-toggle" class="flex top-4 right-4 p-2 bg-gray-200 dark:bg-gray-800 rounded">
+          Toggle Dark Mode
+        </button>
+        <button id="logout-button" class="bg-red-500 dark:bg-red-700 text-white p-2 rounded">Log Out</button>
     </div>
-    <div id="user-list" class="bg-gray-100 hidden">
-      <div id="users-container"></div>
+    <div id="user-list" class="bg-gray-100 dark:bg-gray-800 hidden">
+      <div id="users-container" class="text-black dark:text-white"></div>
     </div>
   `;
 }
@@ -23,4 +25,14 @@ export async function setupHeaderBar() {
       </div>
     `).join('');
   }
+
+  const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+  toggle!.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    if (document.documentElement.classList.contains('dark')) {
+      document.body.style.backgroundColor = "rgb(31 41 55)"
+    } else {
+      document.body.style.backgroundColor = "white"
+    }
+  });
 }

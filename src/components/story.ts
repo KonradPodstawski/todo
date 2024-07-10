@@ -10,29 +10,29 @@ let currentStoryId: number | null = null;
 
 export function getStoryHtml() {
   return `
-    <div id="story-management" class="my-4 p-4 border rounded">
-      <button class="bg-gray-600 text-white p-2 rounded mb-4" onclick="showProjects()">Back to Projects</button>
+    <div id="story-management" class="my-4 p-4 border rounded dark:bg-gray-900 dark:text-white">
+      <button class="bg-gray-600 dark:bg-gray-800 text-white p-2 rounded mb-4" onclick="showProjects()">Back to Projects</button>
       <h2 class="text-xl mb-4">Story Management</h2>
       <form id="story-form" class="space-y-4">
-        <input type="text" id="story-name" placeholder="Story Name" class="border p-2 rounded w-full" />
-        <textarea id="story-description" placeholder="Story Description" class="border p-2 rounded w-full"></textarea>
-        <select id="story-priority" class="border p-2 rounded w-full">
+        <input type="text" id="story-name" placeholder="Story Name" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <textarea id="story-description" placeholder="Story Description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"></textarea>
+        <select id="story-priority" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">
           <option value="niski">Niski</option>
           <option value="średni">Średni</option>
           <option value="wysoki">Wysoki</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Story</button>
+        <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Add Story</button>
       </form>
       <div id="kanban-board" class="mt-4 flex space-x-4">
-        <div id="todo-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="todo-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">To Do</h3>
           <div id="todo-stories" class="space-y-2"></div>
         </div>
-        <div id="doing-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="doing-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">Doing</h3>
           <div id="doing-stories" class="space-y-2"></div>
         </div>
-        <div id="done-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="done-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">Done</h3>
           <div id="done-stories" class="space-y-2"></div>
         </div>
@@ -40,6 +40,7 @@ export function getStoryHtml() {
     </div>
   `;
 }
+
 
 export async function setupStoryManagement() {
   document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
@@ -91,16 +92,17 @@ export async function loadStoriesForProject(projectId: number) {
 
   stories.forEach(s => {
     const storyHtml = `
-      <div class="border p-2 rounded my-2 bg-white">
-        <h3 class="text-lg">${s.name}</h3>
-        <p>${s.description}</p>
-        <p>Priority: ${s.priority}</p>
-        <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
-        <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
-        <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
-        <button class="bg-green-600 text-white p-1 rounded mt-2" onclick="selectStory(${s.id})">Select</button>
-      </div>
-    `;
+    <div class="border p-2 rounded my-2 bg-white dark:bg-gray-800">
+      <h3 class="text-lg text-black dark:text-white">${s.name}</h3>
+      <p class="text-black dark:text-gray-300">${s.description}</p>
+      <p class="text-black dark:text-gray-300">Priority: ${s.priority}</p>
+      <button class="bg-yellow-500 dark:bg-yellow-600 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
+      <button class="bg-red-600 dark:bg-red-700 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
+      <button class="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
+      <button class="bg-green-600 dark:bg-green-500 text-white p-1 rounded mt-2" onclick="selectStory(${s.id})">Select</button>
+    </div>
+  `;
+  
     if (s.status === 'todo' && todoStories) {
       todoStories.innerHTML += storyHtml;
     } else if (s.status === 'doing' && doingStories) {
@@ -114,23 +116,24 @@ export async function loadStoriesForProject(projectId: number) {
 window.editStory = async (id: number) => {
   const story = await StoryService.getById(id);
   showModal(`
-    <h2 class="text-xl mb-4">Edit Story</h2>
+    <h2 class="text-xl mb-4 text-black dark:text-white">Edit Story</h2>
     <form id="modal-story-form" class="space-y-4">
-      <input type="text" id="modal-story-name" value="${story.name}" class="border p-2 rounded w-full" />
-      <textarea id="modal-story-description" class="border p-2 rounded w-full">${story.description}</textarea>
-      <select id="modal-story-priority" class="border p-2 rounded w-full">
+      <input type="text" id="modal-story-name" value="${story.name}" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+      <textarea id="modal-story-description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">${story.description}</textarea>
+      <select id="modal-story-priority" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">
         <option value="niski" ${story.priority === 'niski' ? 'selected' : ''}>Niski</option>
         <option value="średni" ${story.priority === 'średni' ? 'selected' : ''}>Średni</option>
         <option value="wysoki" ${story.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
       </select>
-      <select id="modal-story-status" class="border p-2 rounded w-full">
+      <select id="modal-story-status" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">
         <option value="todo" ${story.status === 'todo' ? 'selected' : ''}>To Do</option>
         <option value="doing" ${story.status === 'doing' ? 'selected' : ''}>Doing</option>
         <option value="done" ${story.status === 'done' ? 'selected' : ''}>Done</option>
       </select>
-      <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Story</button>
+      <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Update Story</button>
     </form>
   `);
+  
   document.querySelector<HTMLFormElement>('#modal-story-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const updatedStory: Partial<Story> & { id: number } = {

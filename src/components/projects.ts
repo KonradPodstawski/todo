@@ -8,16 +8,17 @@ let currentProjectId: number | null = null;
 
 export function getProjectHtml() {
   return `
-    <div id="project-management">
+    <div id="project-management" class="space-y-4 dark:bg-gray-900 dark:text-white">
       <form id="project-form" class="space-y-4">
-        <input type="text" id="project-name" placeholder="Project Name" class="border p-2 rounded w-full" />
-        <textarea id="project-description" placeholder="Project Description" class="border p-2 rounded w-full"></textarea>
-        <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Project</button>
+        <input type="text" id="project-name" placeholder="Project Name" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <textarea id="project-description" placeholder="Project Description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"></textarea>
+        <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full dark:bg-blue-400">Add Project</button>
       </form>
       <div id="project-list" class="mt-4"></div>
     </div>
   `;
 }
+
 
 export async function setupProjectManagement() {
   document.querySelector<HTMLFormElement>('#project-form')?.addEventListener('submit', async (e) => {
@@ -53,13 +54,14 @@ async function loadProjects() {
 window.editProject = async (id: number) => {
   const project = await ProjectService.getById(id);
   showModal(`
-    <h2 class="text-xl mb-4">Edit Project</h2>
+    <h2 class="text-xl mb-4 text-black dark:text-white">Edit Project</h2>
     <form id="modal-project-form" class="space-y-4">
-      <input type="text" id="modal-project-name" value="${project.name}" class="border p-2 rounded w-full" />
-      <textarea id="modal-project-description" class="border p-2 rounded w-full">${project.description}</textarea>
-      <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Project</button>
+      <input type="text" id="modal-project-name" value="${project.name}" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+      <textarea id="modal-project-description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">${project.description}</textarea>
+      <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Update Project</button>
     </form>
   `);
+  
   document.querySelector<HTMLFormElement>('#modal-project-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     project.name = (document.querySelector<HTMLInputElement>('#modal-project-name')!).value;
