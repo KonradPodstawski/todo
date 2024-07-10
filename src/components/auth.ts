@@ -86,12 +86,16 @@ export async function checkAuthStatus() {
     const taskContainer = document.querySelector<HTMLDivElement>('#task-container');
     const titlePage = document.querySelector<HTMLDivElement>('#title-page');
     const userList = document.querySelector<HTMLDivElement>('#user-list');
+    const headerContainer = document.querySelector<HTMLDivElement>('#header-container');
 
     if (user) {
         isAuthenticated = true;
         authForms!.classList.add('hidden');
         authControls!.classList.add('hidden');
         headerBar!.classList.remove('hidden');
+        headerBar!.classList.add('flex');
+        headerContainer!.classList.remove('hidden');
+        // headerContainer!.classList.add('flex');
         projectContainer!.classList.remove('hidden');
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');
@@ -104,10 +108,13 @@ export async function checkAuthStatus() {
     } else {
         userList!.classList.remove('flex');
         userList!.classList.add('hidden');
+        headerContainer!.classList.remove('flex');
+        headerContainer!.classList.add('hidden');
         isAuthenticated = false;
         authForms!.classList.remove('hidden');
         authControls!.classList.remove('hidden');
         headerBar!.classList.add('hidden');
+        headerBar!.classList.remove('flex');
         projectContainer!.classList.add('hidden');
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');
