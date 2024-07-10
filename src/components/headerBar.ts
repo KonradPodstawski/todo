@@ -1,4 +1,4 @@
-import { UserService, User } from '../services/UserService.ts';
+import { UserService } from '../services/UserService.ts';
 
 export function getHeaderBarHtml() {
   return `
