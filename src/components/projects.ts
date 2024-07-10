@@ -92,6 +92,5 @@ window.selectProject = async (id: number) => {
   currentProjectId = id;
   document.querySelector<HTMLDivElement>('#project-container')!.classList.add('hidden');
   document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
-  document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
   await showStoriesForProject(id);
 }
