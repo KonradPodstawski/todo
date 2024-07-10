@@ -1,9 +1,9 @@
 import { TaskService, Task } from '../services/TaskService.ts';
-import { StoryService } from '../services/StoryService.ts';
 import { UserService, User } from '../services/UserService.ts';
+import { StoryService } from '../services/StoryService.ts';
 import { getNextID } from '../utils/utils.ts';
-import { loadOwners, loadProjects } from './story.ts';
 import { showModal } from './modal.ts';
+import { loadOwners, loadProjects } from './story.ts';
 
 export function getTaskHtml() {
   return `
@@ -27,13 +27,13 @@ export function getTaskHtml() {
 }
 
 export async function setupTaskManagement() {
- document.querySelector<HTMLFormElement>('#task-name')?.addEventListener('mouseover', async (e) => {
+  document.querySelector<HTMLFormElement>('#task-name')?.addEventListener('mouseover', async (e) => {
     await loadProjects();
     await loadStories();
     await loadTasks();
     await loadOwners();
-    await loadStories();
   });
+
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
@@ -43,18 +43,12 @@ export async function setupTaskManagement() {
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
     const responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
     await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id });
-    await loadProjects();
-    await loadStories();
     await loadTasks();
-    await loadOwners();
-    await loadStories();
   });
 
-  await loadProjects();
-  await loadStories();
   await loadTasks();
-  await loadOwners();
   await loadStories();
+  await loadUsers();
 }
 
 export async function loadStories() {
@@ -74,20 +68,20 @@ export async function loadUsers() {
 }
 
 async function loadTasks() {
-    const tasks = await TaskService.getAll();
-    const taskList = document.querySelector<HTMLDivElement>('#task-list');
-    if (taskList) {
-      taskList.innerHTML = tasks.map(t => `
-        <div class="border p-2 rounded my-2">
-          <h3 class="text-lg">${t.name}</h3>
-          <p>${t.description}</p>
-          <p>Priority: ${t.priority}</p>
-          <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editTask(${t.id})">Edit</button>
-          <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
-          <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoTask(${t.id})">Info</button>
-        </div>
-      `).join('');
-    }
+  const tasks = await TaskService.getAll();
+  const taskList = document.querySelector<HTMLDivElement>('#task-list');
+  if (taskList) {
+    taskList.innerHTML = tasks.map(t => `
+      <div class="border p-2 rounded my-2">
+        <h3 class="text-lg">${t.name}</h3>
+        <p>${t.description}</p>
+        <p>Priority: ${t.priority}</p>
+        <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editTask(${t.id})">Edit</button>
+        <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
+        <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoTask(${t.id})">Info</button>
+      </div>
+    `).join('');
+  }
 }
 
 window.editTask = async (id: number) => {
@@ -102,16 +96,22 @@ window.editTask = async (id: number) => {
             <option value="średni" ${task.priority === 'średni' ? 'selected' : ''}>Średni</option>
             <option value="wysoki" ${task.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
           </select>
-          <select id="modal-task-story" class="border p-2 rounded w-full"></select>
           <input type="text" id="modal-task-estimated-time" value="${task.estimated_time}" class="border p-2 rounded w-full" />
           <select id="modal-task-user" class="border p-2 rounded w-full"></select>
+          <select id="modal-task-status" class="border p-2 rounded w-full">
+            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
+            <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Doing</option>
+            <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+          </select>
           <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Task</button>
       </form>
   `);
-  await loadStories();
   await loadUsers();
-  document.querySelector<HTMLSelectElement>('#modal-task-story')!.value = task.story_id.toString();
-  document.querySelector<HTMLSelectElement>('#modal-task-user')!.value = task.responsible_user_id || '';
+  const userSelect = document.querySelector<HTMLSelectElement>('#modal-task-user');
+  if (userSelect) {
+    userSelect.innerHTML = (await UserService.getAll()).map(user => `<option value="${user.id}">${user.first_name} ${user.last_name}</option>`).join('');
+  }
+  userSelect!.value = task.responsible_user_id || '';
   document.querySelector<HTMLFormElement>('#modal-task-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const updatedTask: Partial<Task> & { id: number } = {
@@ -120,11 +120,9 @@ window.editTask = async (id: number) => {
           description: (document.querySelector<HTMLTextAreaElement>('#modal-task-description')!).value,
           priority: (document.querySelector<HTMLSelectElement>('#modal-task-priority')!).value as 'niski' | 'średni' | 'wysoki',
           estimated_time: (document.querySelector<HTMLInputElement>('#modal-task-estimated-time')!).value,
+          responsible_user_id: (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value,
+          status: (document.querySelector<HTMLSelectElement>('#modal-task-status')!).value as 'todo' | 'doing' | 'done',
       };
-      const storyIdValue = (document.querySelector<HTMLSelectElement>('#modal-task-story')!).value;
-      if (storyIdValue) updatedTask.story_id = parseInt(storyIdValue);
-      const userIdValue = (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value;
-      if (userIdValue) updatedTask.responsible_user_id = userIdValue;
       await TaskService.update(updatedTask);
       document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
       await loadTasks();

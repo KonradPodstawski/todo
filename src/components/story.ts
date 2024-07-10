@@ -28,7 +28,9 @@ export function getStoryHtml() {
 export async function setupStoryManagement() {
   document.querySelector<HTMLFormElement>('#story-name')?.addEventListener('mouseover', async (e) => {
     await loadProjects();
+    await loadOwners();
   });
+
   document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
@@ -37,8 +39,6 @@ export async function setupStoryManagement() {
     const project_id = parseInt((document.querySelector<HTMLSelectElement>('#story-project')!).value);
     const owner_id = (document.querySelector<HTMLSelectElement>('#story-owner')!).value;
     await StoryService.create({ id: getNextID(), name, description, priority, project_id, created_at: (new Date()).toISOString(), status: 'todo', owner_id });
-    await loadProjects();
-    await loadOwners();
     await loadStories();
   });
 
@@ -92,15 +92,9 @@ window.editStory = async (id: number) => {
             <option value="średni" ${story.priority === 'średni' ? 'selected' : ''}>Średni</option>
             <option value="wysoki" ${story.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
           </select>
-          <select id="modal-story-project" class="border p-2 rounded w-full"></select>
-          <select id="modal-story-owner" class="border p-2 rounded w-full"></select>
           <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Story</button>
       </form>
   `);
-  await loadProjects();
-  await loadOwners();
-  document.querySelector<HTMLSelectElement>('#modal-story-project')!.value = story.project_id.toString();
-  document.querySelector<HTMLSelectElement>('#modal-story-owner')!.value = story.owner_id;
   document.querySelector<HTMLFormElement>('#modal-story-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const updatedStory: Partial<Story> & { id: number } = {
@@ -109,10 +103,6 @@ window.editStory = async (id: number) => {
           description: (document.querySelector<HTMLTextAreaElement>('#modal-story-description')!).value,
           priority: (document.querySelector<HTMLSelectElement>('#modal-story-priority')!).value as 'niski' | 'średni' | 'wysoki',
       };
-      const projectIdValue = (document.querySelector<HTMLSelectElement>('#modal-story-project')!).value;
-      if (projectIdValue) updatedStory.project_id = parseInt(projectIdValue);
-      const ownerIdValue = (document.querySelector<HTMLSelectElement>('#modal-story-owner')!).value;
-      if (ownerIdValue) updatedStory.owner_id = ownerIdValue;
       await StoryService.update(updatedStory);
       document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
       await loadStories();

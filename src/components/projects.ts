@@ -56,7 +56,6 @@ window.editProject = async (id: number) => {
         <form id="modal-project-form" class="space-y-4">
             <input type="text" id="modal-project-name" value="${project.name}" class="border p-2 rounded w-full" />
             <textarea id="modal-project-description" class="border p-2 rounded w-full">${project.description}</textarea>
-            <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Project</button>
         </form>
     `);
     document.querySelector<HTMLFormElement>('#modal-project-form')?.addEventListener('submit', async (e) => {
