@@ -1,4 +1,5 @@
 import { supabase } from '../supabase.ts';
+import { setupHeaderBar } from './headerBar.ts';
 import { setupProjectManagement } from './projects.ts';
 import { setupStoryManagement } from './story.ts';
 import { setupTaskManagement } from './task.ts';
@@ -84,6 +85,7 @@ export async function checkAuthStatus() {
     const storyContainer = document.querySelector<HTMLDivElement>('#story-container');
     const taskContainer = document.querySelector<HTMLDivElement>('#task-container');
     const titlePage = document.querySelector<HTMLDivElement>('#title-page');
+    const userList = document.querySelector<HTMLDivElement>('#user-list');
 
     if (user) {
         isAuthenticated = true;
@@ -94,9 +96,14 @@ export async function checkAuthStatus() {
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');
         titlePage!.classList.add('hidden');
+        userList!.classList.remove('hidden');
+        userList!.classList.add('flex');
+        await setupHeaderBar();
         authMessage!.innerText = `Welcome, ${user.email}`;
-
+        
     } else {
+        userList!.classList.remove('flex');
+        userList!.classList.add('hidden');
         isAuthenticated = false;
         authForms!.classList.remove('hidden');
         authControls!.classList.remove('hidden');
