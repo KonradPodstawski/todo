@@ -91,8 +91,8 @@ export async function checkAuthStatus() {
         authControls!.classList.add('hidden');
         headerBar!.classList.remove('hidden');
         projectContainer!.classList.remove('hidden');
-        storyContainer!.classList.remove('hidden');
-        taskContainer!.classList.remove('hidden');
+        storyContainer!.classList.add('hidden');
+        taskContainer!.classList.add('hidden');
         titlePage!.classList.add('hidden');
         authMessage!.innerText = `Welcome, ${user.email}`;
 
