@@ -29,6 +29,12 @@ export class TaskService {
     return data as Task[];
   }
 
+  static async getAllByStoryId(storyId: number): Promise<Task[]> {
+    const { data, error } = await supabase.from(this.table).select('*').eq('story_id', storyId);
+    if (error) throw new Error(error.message);
+    return data as Task[];
+  }
+
   static async create(task: Task): Promise<Task> {
     const { data, error } = await supabase.from(this.table).insert(task).single();
     if (error) throw new Error(error.message);
