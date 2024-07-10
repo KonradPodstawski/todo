@@ -7,34 +7,36 @@ import { setupTaskManagement } from './task.ts';
 let isAuthenticated = false;
 
 export function getAuthHtml() {
-  return `
-    <div id="auth-forms" class="mt-8 overflow-hidden relative w-full h-full">
+    return `
+      <div id="auth-forms" class="mt-8 overflow-hidden relative w-full h-full dark:bg-gray-900">
         <div id="carousel-content" class="flex transition-transform duration-500">
-            <div id="signup-form" class="w-full p-4">
-                <form class="space-y-4" id="signup-form-element">
-                    <input type="email" id="signup-email" placeholder="Email" class="border p-2 rounded w-full"/>
-                    <input type="password" id="signup-password" placeholder="Password" class="border p-2 rounded w-full"/>
-                    <input type="text" id="signup-first-name" placeholder="First Name" class="border p-2 rounded w-full"/>
-                    <input type="text" id="signup-last-name" placeholder="Last Name" class="border p-2 rounded w-full"/>
-                    <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Sign Up</button>
-                </form>
-            </div>
-            <div id="login-form" class="w-full p-4">
-                <form class="space-y-4" id="login-form-element">
-                    <input type="email" id="login-email" placeholder="Email" class="border p-2 rounded w-full"/>
-                    <input type="password" id="login-password" placeholder="Password" class="border p-2 rounded w-full"/>
-                    <button type="submit" class="bg-green-600 text-white p-2 rounded w-full">Log In</button>
-                </form>
-            </div>
+          <div id="signup-form" class="w-full p-4 dark:bg-gray-800">
+            <form class="space-y-4" id="signup-form-element">
+              <input type="email" id="signup-email" placeholder="Email" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <input type="password" id="signup-password" placeholder="Password" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <input type="text" id="signup-first-name" placeholder="First Name" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <input type="text" id="signup-last-name" placeholder="Last Name" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Sign Up</button>
+            </form>
+          </div>
+          <div id="login-form" class="w-full p-4 dark:bg-gray-800">
+            <form class="space-y-4" id="login-form-element">
+              <input type="email" id="login-email" placeholder="Email" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <input type="password" id="login-password" placeholder="Password" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"/>
+              <button type="submit" class="bg-green-600 dark:bg-green-400 text-white p-2 rounded w-full">Log In</button>
+            </form>
+          </div>
         </div>
-    </div>
-    <div id="auth-controls" class="mt-4">
-        <button id="toggle-signup" class="mr-2 bg-blue-500 text-white p-2 rounded">Sign Up</button>
-        <button id="toggle-login" class="bg-green-500 text-white p-2 rounded">Log In</button>
-    </div>
-    <div id="auth-message" class="mt-4 text-red-500"></div>
+      </div>
+      <div id="auth-controls" class="mt-4">
+        <button id="toggle-signup" class="mr-2 bg-blue-500 dark:bg-blue-400 text-white p-2 rounded">Sign Up</button>
+        <button id="toggle-login" class="bg-green-500 dark:bg-green-400 text-white p-2 rounded">Log In</button>
+      </div>
+      <div id="auth-message" class="mt-4 text-red-500 dark:text-red-400"></div>
     `;
-}
+  }
+  
+  
 
 export async function signUp(email: string, password: string, firstName: string, lastName: string): Promise<{ message?: string, error?: string }> {
     const { data: user, error } = await supabase.auth.signUp({

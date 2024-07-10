@@ -7,31 +7,31 @@ let currentStoryId: number | null = null;
 
 export function getTaskHtml() {
   return `
-    <div id="task-management" class="my-4 p-4 border rounded">
-      <button class="bg-gray-600 text-white p-2 rounded mb-4" onclick="showStories()">Back to Stories</button>
+    <div id="task-management" class="my-4 p-4 border rounded dark:bg-gray-900 dark:text-white">
+      <button class="bg-gray-600 dark:bg-gray-800 text-white p-2 rounded mb-4" onclick="showStories()">Back to Stories</button>
       <h2 class="text-xl mb-4">Task Management</h2>
       <form id="task-form" class="space-y-4">
-        <input type="text" id="task-name" placeholder="Task Name" class="border p-2 rounded w-full" />
-        <textarea id="task-description" placeholder="Task Description" class="border p-2 rounded w-full"></textarea>
-        <select id="task-priority" class="border p-2 rounded w-full">
+        <input type="text" id="task-name" placeholder="Task Name" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <textarea id="task-description" placeholder="Task Description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"></textarea>
+        <select id="task-priority" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">
           <option value="niski">Niski</option>
           <option value="średni">Średni</option>
           <option value="wysoki">Wysoki</option>
         </select>
-        <input type="text" id="task-estimated-time" placeholder="Estimated Time (e.g., 2h 30m)" class="border p-2 rounded w-full" />
-        <select id="task-user" class="border p-2 rounded w-full"></select>
-        <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Task</button>
+        <input type="text" id="task-estimated-time" placeholder="Estimated Time (e.g., 2h 30m)" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <select id="task-user" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"></select>
+        <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Add Task</button>
       </form>
       <div id="kanban-board" class="mt-4 flex space-x-4">
-        <div id="todo-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="todo-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">To Do</h3>
           <div id="todo-tasks" class="space-y-2"></div>
         </div>
-        <div id="doing-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="doing-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">Doing</h3>
           <div id="doing-tasks" class="space-y-2"></div>
         </div>
-        <div id="done-column" class="w-1/3 bg-gray-200 p-4 rounded">
+        <div id="done-column" class="w-1/3 bg-gray-200 dark:bg-gray-700 p-4 rounded">
           <h3 class="text-xl mb-4">Done</h3>
           <div id="done-tasks" class="space-y-2"></div>
         </div>
@@ -39,6 +39,7 @@ export function getTaskHtml() {
     </div>
   `;
 }
+
 
 export async function setupTaskManagement() {
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
@@ -89,15 +90,16 @@ export async function loadTasksForStory(storyId: number) {
 
   tasks.forEach(t => {
     const taskHtml = `
-      <div class="border p-2 rounded my-2 bg-white">
-        <h3 class="text-lg">${t.name}</h3>
-        <p>${t.description}</p>
-        <p>Priority: ${t.priority}</p>
-        <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editTask(${t.id})">Edit</button>
-        <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
-        <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoTask(${t.id})">Info</button>
-      </div>
-    `;
+    <div class="border p-2 rounded my-2 bg-white dark:bg-gray-800">
+      <h3 class="text-lg text-black dark:text-white">${t.name}</h3>
+      <p class="text-black dark:text-gray-300">${t.description}</p>
+      <p class="text-black dark:text-gray-300">Priority: ${t.priority}</p>
+      <button class="bg-yellow-500 dark:bg-yellow-600 text-white p-1 rounded mt-2" onclick="editTask(${t.id})">Edit</button>
+      <button class="bg-red-600 dark:bg-red-700 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
+      <button class="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded mt-2" onclick="infoTask(${t.id})">Info</button>
+    </div>
+  `;
+  
     if (t.status === 'todo' && todoTasks) {
       todoTasks.innerHTML += taskHtml;
     } else if (t.status === 'doing' && doingTasks) {
@@ -111,25 +113,26 @@ export async function loadTasksForStory(storyId: number) {
 window.editTask = async (id: number) => {
   const task = await TaskService.getById(id);
   showModal(`
-      <h2 class="text-xl mb-4">Edit Task</h2>
-      <form id="modal-task-form" class="space-y-4">
-          <input type="text" id="modal-task-name" value="${task.name}" class="border p-2 rounded w-full" />
-          <textarea id="modal-task-description" class="border p-2 rounded w-full">${task.description}</textarea>
-          <select id="modal-task-priority" class="border p-2 rounded w-full">
-            <option value="niski" ${task.priority === 'niski' ? 'selected' : ''}>Niski</option>
-            <option value="średni" ${task.priority === 'średni' ? 'selected' : ''}>Średni</option>
-            <option value="wysoki" ${task.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
-          </select>
-          <input type="text" id="modal-task-estimated-time" value="${task.estimated_time}" class="border p-2 rounded w-full" />
-          <select id="modal-task-user" class="border p-2 rounded w-full"></select>
-          <select id="modal-task-status" class="border p-2 rounded w-full" ${!task.responsible_user_id ? 'disabled' : ''}>
-            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
-            <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Doing</option>
-            <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
-          </select>
-          <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Task</button>
-      </form>
+    <h2 class="text-xl mb-4 text-black dark:text-white">Edit Task</h2>
+    <form id="modal-task-form" class="space-y-4">
+        <input type="text" id="modal-task-name" value="${task.name}" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <textarea id="modal-task-description" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">${task.description}</textarea>
+        <select id="modal-task-priority" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white">
+          <option value="niski" ${task.priority === 'niski' ? 'selected' : ''}>Niski</option>
+          <option value="średni" ${task.priority === 'średni' ? 'selected' : ''}>Średni</option>
+          <option value="wysoki" ${task.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
+        </select>
+        <input type="text" id="modal-task-estimated-time" value="${task.estimated_time}" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" />
+        <select id="modal-task-user" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white"></select>
+        <select id="modal-task-status" class="border p-2 rounded w-full dark:bg-gray-700 dark:text-white" ${!task.responsible_user_id ? 'disabled' : ''}>
+          <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
+          <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Doing</option>
+          <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+        </select>
+        <button type="submit" class="bg-blue-600 dark:bg-blue-400 text-white p-2 rounded w-full">Update Task</button>
+    </form>
   `);
+  
   await loadUsers();
   const userSelect = document.querySelector<HTMLSelectElement>('#modal-task-user');
   if (userSelect) {
