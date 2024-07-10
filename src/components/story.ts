@@ -3,8 +3,10 @@ import { UserService, User } from '../services/UserService.ts';
 import { ProjectService } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showModal } from './modal.ts';
+import { showTasksForStory } from './task.ts';
 
 let currentProjectId: number | null = null;
+let currentStoryId: number | null = null;
 
 export function getStoryHtml() {
   return `
@@ -95,6 +97,7 @@ export async function loadStories() {
         <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
         <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
         <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
+        <button class="bg-green-600 text-white p-1 rounded mt-2" onclick="selectStory(${s.id})">Select</button>
       </div>
     `;
     if (s.status === 'todo' && todoStories) {
@@ -172,6 +175,13 @@ window.infoStory = async (id: number) => {
   document.querySelector<HTMLButtonElement>('#modal-close')?.addEventListener('click', () => {
     document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
   });
+}
+
+window.selectStory = async (id: number) => {
+  currentStoryId = id;
+  document.querySelector<HTMLDivElement>('#story-container')!.classList.add('hidden');
+  document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
+  await showTasksForStory(id);
 }
 
 export async function showStoriesForProject(projectId: number) {
