@@ -21,17 +21,25 @@ export function getStoryHtml() {
         </select>
         <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Story</button>
       </form>
-      <div id="story-list" class="mt-4"></div>
+      <div id="kanban-board" class="mt-4 flex space-x-4">
+        <div id="todo-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">To Do</h3>
+          <div id="todo-stories" class="space-y-2"></div>
+        </div>
+        <div id="doing-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">Doing</h3>
+          <div id="doing-stories" class="space-y-2"></div>
+        </div>
+        <div id="done-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">Done</h3>
+          <div id="done-stories" class="space-y-2"></div>
+        </div>
+      </div>
     </div>
   `;
 }
 
 export async function setupStoryManagement() {
-  document.querySelector<HTMLFormElement>('#story-name')?.addEventListener('mouseover', async (e) => {
-    await loadProjects();
-    await loadOwners();
-  });
-
   document.querySelector<HTMLFormElement>('#story-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = (document.querySelector<HTMLInputElement>('#story-name')!).value;
@@ -70,10 +78,17 @@ export async function loadOwners() {
 
 export async function loadStories() {
   const stories = await StoryService.getAll();
-  const storyList = document.querySelector<HTMLDivElement>('#story-list');
-  if (storyList) {
-    storyList.innerHTML = stories.map(s => `
-      <div class="border p-2 rounded my-2">
+  const todoStories = document.querySelector<HTMLDivElement>('#todo-stories');
+  const doingStories = document.querySelector<HTMLDivElement>('#doing-stories');
+  const doneStories = document.querySelector<HTMLDivElement>('#done-stories');
+
+  if (todoStories) todoStories.innerHTML = '';
+  if (doingStories) doingStories.innerHTML = '';
+  if (doneStories) doneStories.innerHTML = '';
+
+  stories.forEach(s => {
+    const storyHtml = `
+      <div class="border p-2 rounded my-2 bg-white">
         <h3 class="text-lg">${s.name}</h3>
         <p>${s.description}</p>
         <p>Priority: ${s.priority}</p>
@@ -81,8 +96,15 @@ export async function loadStories() {
         <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
         <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
       </div>
-    `).join('');
-  }
+    `;
+    if (s.status === 'todo' && todoStories) {
+      todoStories.innerHTML += storyHtml;
+    } else if (s.status === 'doing' && doingStories) {
+      doingStories.innerHTML += storyHtml;
+    } else if (s.status === 'done' && doneStories) {
+      doneStories.innerHTML += storyHtml;
+    }
+  });
 }
 
 window.editStory = async (id: number) => {
@@ -97,6 +119,11 @@ window.editStory = async (id: number) => {
         <option value="średni" ${story.priority === 'średni' ? 'selected' : ''}>Średni</option>
         <option value="wysoki" ${story.priority === 'wysoki' ? 'selected' : ''}>Wysoki</option>
       </select>
+      <select id="modal-story-status" class="border p-2 rounded w-full">
+        <option value="todo" ${story.status === 'todo' ? 'selected' : ''}>To Do</option>
+        <option value="doing" ${story.status === 'doing' ? 'selected' : ''}>Doing</option>
+        <option value="done" ${story.status === 'done' ? 'selected' : ''}>Done</option>
+      </select>
       <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Update Story</button>
     </form>
   `);
@@ -107,6 +134,7 @@ window.editStory = async (id: number) => {
       name: (document.querySelector<HTMLInputElement>('#modal-story-name')!).value,
       description: (document.querySelector<HTMLTextAreaElement>('#modal-story-description')!).value,
       priority: (document.querySelector<HTMLSelectElement>('#modal-story-priority')!).value as 'niski' | 'średni' | 'wysoki',
+      status: (document.querySelector<HTMLSelectElement>('#modal-story-status')!).value as 'todo' | 'doing' | 'done',
     };
     await StoryService.update(updatedStory);
     document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
@@ -148,25 +176,10 @@ window.infoStory = async (id: number) => {
 
 export async function showStoriesForProject(projectId: number) {
   currentProjectId = projectId;
-  const stories = await StoryService.getAll();
-  const filteredStories = stories.filter(story => story.project_id === projectId);
-  const storyList = document.querySelector<HTMLDivElement>('#story-list');
-  if (storyList) {
-    storyList.innerHTML = filteredStories.map(s => `
-      <div class="border p-2 rounded my-2">
-        <h3 class="text-lg">${s.name}</h3>
-        <p>${s.description}</p>
-        <p>Priority: ${s.priority}</p>
-        <button class="bg-yellow-500 text-white p-1 rounded mt-2" onclick="editStory(${s.id})">Edit</button>
-        <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteStory(${s.id})">Delete</button>
-        <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoStory(${s.id})">Info</button>
-      </div>
-    `).join('');
-  }
+  await loadStories();
 }
 
 window.showProjects = () => {
   document.querySelector<HTMLDivElement>('#project-container')!.classList.remove('hidden');
   document.querySelector<HTMLDivElement>('#story-container')!.classList.add('hidden');
-  document.querySelector<HTMLDivElement>('#task-container')!.classList.add('hidden');
 }
