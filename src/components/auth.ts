@@ -47,7 +47,7 @@ export async function signUp(email: string, password: string, firstName: string,
 
     const { data, error: dbError } = await supabase
         .from('users')
-        .insert([{ id: user.user!.id, first_name: firstName, last_name: lastName, role: 'admin' }]);
+        .insert([{ id: user.user!.id, first_name: firstName, last_name: lastName, role: 'developer' }]);
 
     if (dbError) {
         return { error: dbError.message };
