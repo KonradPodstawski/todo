@@ -3,8 +3,8 @@ import { setupAuth, checkAuthStatus, getIAuthenticated } from './components/auth
 import { getTitlePageHtml } from './components/titlePage.ts';
 import { getHeaderBarHtml } from './components/headerBar.ts';
 import { getProjectHtml, setupProjectManagement } from './components/projects.ts';
-import { getStoryHtml, setupStoryManagement } from './components/story.ts';
-import { getTaskHtml, setupTaskManagement } from './components/task.ts';
+import { getStoryHtml, setupStoryManagement, showStoriesForProject } from './components/story.ts';
+import { getTaskHtml, setupTaskManagement, showTasksForStory } from './components/task.ts';
 import { getModalHtml, setupModal } from './components/modal.ts';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `

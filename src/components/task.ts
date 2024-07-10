@@ -1,13 +1,15 @@
 import { TaskService, Task } from '../services/TaskService.ts';
 import { UserService, User } from '../services/UserService.ts';
-import { StoryService } from '../services/StoryService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showModal } from './modal.ts';
-import { loadOwners, loadProjects } from './story.ts';
+
+let currentStoryId: number | null = null;
 
 export function getTaskHtml() {
   return `
-    <div id="task-management">
+    <div id="task-management" class="my-4 p-4 border rounded">
+      <button class="bg-gray-600 text-white p-2 rounded mb-4" onclick="showStories()">Back to Stories</button>
+      <h2 class="text-xl mb-4">Task Management</h2>
       <form id="task-form" class="space-y-4">
         <input type="text" id="task-name" placeholder="Task Name" class="border p-2 rounded w-full" />
         <textarea id="task-description" placeholder="Task Description" class="border p-2 rounded w-full"></textarea>
@@ -16,22 +18,31 @@ export function getTaskHtml() {
           <option value="średni">Średni</option>
           <option value="wysoki">Wysoki</option>
         </select>
-        <select id="task-story" class="border p-2 rounded w-full"></select>
         <input type="text" id="task-estimated-time" placeholder="Estimated Time (e.g., 2h 30m)" class="border p-2 rounded w-full" />
         <select id="task-user" class="border p-2 rounded w-full"></select>
         <button type="submit" class="bg-blue-600 text-white p-2 rounded w-full">Add Task</button>
       </form>
-      <div id="task-list" class="mt-4"></div>
+      <div id="kanban-board" class="mt-4 flex space-x-4">
+        <div id="todo-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">To Do</h3>
+          <div id="todo-tasks" class="space-y-2"></div>
+        </div>
+        <div id="doing-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">Doing</h3>
+          <div id="doing-tasks" class="space-y-2"></div>
+        </div>
+        <div id="done-column" class="w-1/3 bg-gray-200 p-4 rounded">
+          <h3 class="text-xl mb-4">Done</h3>
+          <div id="done-tasks" class="space-y-2"></div>
+        </div>
+      </div>
     </div>
   `;
 }
 
 export async function setupTaskManagement() {
   document.querySelector<HTMLFormElement>('#task-name')?.addEventListener('mouseover', async (e) => {
-    await loadProjects();
-    await loadStories();
-    await loadTasks();
-    await loadOwners();
+    await loadUsers();
   });
 
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
@@ -39,40 +50,48 @@ export async function setupTaskManagement() {
     const name = (document.querySelector<HTMLInputElement>('#task-name')!).value;
     const description = (document.querySelector<HTMLTextAreaElement>('#task-description')!).value;
     const priority = (document.querySelector<HTMLSelectElement>('#task-priority')!).value as 'niski' | 'średni' | 'wysoki';
-    const story_id = parseInt((document.querySelector<HTMLSelectElement>('#task-story')!).value);
+    if (!currentStoryId) {
+      alert('No story selected');
+      return;
+    }
+    const story_id = currentStoryId;
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
-    const responsible_user_id = (document.querySelector<HTMLSelectElement>('#task-user')!).value;
-    await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id });
+
+    // Validate estimated time
+    if (!isValidInterval(estimated_time)) {
+      alert('Invalid estimated time format. Use format like "2h 30m".');
+      return;
+    }
+
+    await TaskService.create({ id: getNextID(), name, description, priority, story_id, estimated_time, status: 'todo', created_at: (new Date()).toISOString(), responsible_user_id: null });
     await loadTasks();
   });
 
-  await loadTasks();
-  await loadStories();
   await loadUsers();
-}
-
-export async function loadStories() {
-  const stories = await StoryService.getAll();
-  const storySelect = document.querySelector<HTMLSelectElement>('#task-story');
-  if (storySelect) {
-    storySelect.innerHTML = stories.map(story => `<option value="${story.id}">${story.name}</option>`).join('');
-  }
+  await loadTasks();
 }
 
 export async function loadUsers() {
   const users = await UserService.getAll();
   const userSelect = document.querySelector<HTMLSelectElement>('#task-user');
   if (userSelect) {
-    userSelect.innerHTML = users.map(user => `<option value="${user.id}">${user.first_name} ${user.last_name}</option>`).join('');
+    userSelect.innerHTML = `<option value="">Unassigned</option>` + users.map(user => `<option value="${user.id}">${user.first_name} ${user.last_name}</option>`).join('');
   }
 }
 
-async function loadTasks() {
+export async function loadTasks() {
   const tasks = await TaskService.getAll();
-  const taskList = document.querySelector<HTMLDivElement>('#task-list');
-  if (taskList) {
-    taskList.innerHTML = tasks.map(t => `
-      <div class="border p-2 rounded my-2">
+  const todoTasks = document.querySelector<HTMLDivElement>('#todo-tasks');
+  const doingTasks = document.querySelector<HTMLDivElement>('#doing-tasks');
+  const doneTasks = document.querySelector<HTMLDivElement>('#done-tasks');
+
+  if (todoTasks) todoTasks.innerHTML = '';
+  if (doingTasks) doingTasks.innerHTML = '';
+  if (doneTasks) doneTasks.innerHTML = '';
+
+  tasks.forEach(t => {
+    const taskHtml = `
+      <div class="border p-2 rounded my-2 bg-white">
         <h3 class="text-lg">${t.name}</h3>
         <p>${t.description}</p>
         <p>Priority: ${t.priority}</p>
@@ -80,8 +99,15 @@ async function loadTasks() {
         <button class="bg-red-600 text-white p-1 rounded mt-2" onclick="deleteTask(${t.id})">Delete</button>
         <button class="bg-blue-600 text-white p-1 rounded mt-2" onclick="infoTask(${t.id})">Info</button>
       </div>
-    `).join('');
-  }
+    `;
+    if (t.status === 'todo' && todoTasks) {
+      todoTasks.innerHTML += taskHtml;
+    } else if (t.status === 'doing' && doingTasks) {
+      doingTasks.innerHTML += taskHtml;
+    } else if (t.status === 'done' && doneTasks) {
+      doneTasks.innerHTML += taskHtml;
+    }
+  });
 }
 
 window.editTask = async (id: number) => {
@@ -98,7 +124,7 @@ window.editTask = async (id: number) => {
           </select>
           <input type="text" id="modal-task-estimated-time" value="${task.estimated_time}" class="border p-2 rounded w-full" />
           <select id="modal-task-user" class="border p-2 rounded w-full"></select>
-          <select id="modal-task-status" class="border p-2 rounded w-full">
+          <select id="modal-task-status" class="border p-2 rounded w-full" ${!task.responsible_user_id ? 'disabled' : ''}>
             <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
             <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Doing</option>
             <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
@@ -109,7 +135,7 @@ window.editTask = async (id: number) => {
   await loadUsers();
   const userSelect = document.querySelector<HTMLSelectElement>('#modal-task-user');
   if (userSelect) {
-    userSelect.innerHTML = (await UserService.getAll()).map(user => `<option value="${user.id}">${user.first_name} ${user.last_name}</option>`).join('');
+    userSelect.innerHTML = `<option value="">Unassigned</option>` + (await UserService.getAll()).map(user => `<option value="${user.id}">${user.first_name} ${user.last_name}</option>`).join('');
   }
   userSelect!.value = task.responsible_user_id || '';
   document.querySelector<HTMLFormElement>('#modal-task-form')?.addEventListener('submit', async (e) => {
@@ -120,9 +146,29 @@ window.editTask = async (id: number) => {
           description: (document.querySelector<HTMLTextAreaElement>('#modal-task-description')!).value,
           priority: (document.querySelector<HTMLSelectElement>('#modal-task-priority')!).value as 'niski' | 'średni' | 'wysoki',
           estimated_time: (document.querySelector<HTMLInputElement>('#modal-task-estimated-time')!).value,
-          responsible_user_id: (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value,
+          responsible_user_id: (document.querySelector<HTMLSelectElement>('#modal-task-user')!).value || null,
           status: (document.querySelector<HTMLSelectElement>('#modal-task-status')!).value as 'todo' | 'doing' | 'done',
       };
+
+      // Validate estimated time
+      if (!isValidInterval(updatedTask.estimated_time)) {
+        alert('Invalid estimated time format. Use format like "2h 30m".');
+        return;
+      }
+
+      // Automatically move task to 'doing' if responsible user is assigned
+      if (updatedTask.responsible_user_id && updatedTask.status === 'todo') {
+        updatedTask.status = 'doing';
+        updatedTask.start_time = new Date().toISOString();
+        updatedTask.end_time = null;
+      } else if (updatedTask.status === 'done') {
+        updatedTask.end_time = new Date().toISOString();
+      } else if (!updatedTask.responsible_user_id) {
+        updatedTask.status = 'todo';
+        updatedTask.start_time = null;
+        updatedTask.end_time = null;
+      }
+
       await TaskService.update(updatedTask);
       document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
       await loadTasks();
@@ -152,4 +198,19 @@ window.infoTask = async (id: number) => {
   document.querySelector<HTMLButtonElement>('#modal-close')?.addEventListener('click', () => {
       document.querySelector<HTMLDivElement>('#modal')!.classList.add('hidden');
   });
+}
+
+export async function showTasksForStory(storyId: number) {
+  currentStoryId = storyId;
+  await loadTasks();
+}
+
+window.showStories = () => {
+  document.querySelector<HTMLDivElement>('#task-container')!.classList.add('hidden');
+  document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
+}
+
+function isValidInterval(input: string): boolean {
+  const regex = /^(\d+h\s*)?(\d+m\s*)?$/;
+  return regex.test(input.trim());
 }
