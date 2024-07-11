@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-
 #carousel-content {
-    width: 200%; /* Ensure the carousel content is wide enough to contain both forms */
+    width: 200%;
 }
 #signup-form, #login-form {
-    width: 50%; /* Each form should take half the width of the carousel content */
+    width: 50%;
 }
 
 #header-bar {
