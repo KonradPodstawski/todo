@@ -95,7 +95,6 @@ export async function checkAuthStatus() {
         headerBar!.classList.remove('hidden');
         headerBar!.classList.add('flex');
         headerContainer!.classList.remove('hidden');
-        // headerContainer!.classList.add('flex');
         projectContainer!.classList.remove('hidden');
         storyContainer!.classList.add('hidden');
         taskContainer!.classList.add('hidden');

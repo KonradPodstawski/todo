@@ -40,7 +40,6 @@ export function getTaskHtml() {
   `;
 }
 
-
 export async function setupTaskManagement() {
   document.querySelector<HTMLFormElement>('#task-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -54,7 +53,6 @@ export async function setupTaskManagement() {
     const story_id = currentStoryId;
     const estimated_time = (document.querySelector<HTMLInputElement>('#task-estimated-time')!).value;
 
-    // Validate estimated time
     if (!isValidInterval(estimated_time)) {
       alert('Invalid estimated time format. Use format like "2h 30m".');
       return;
@@ -151,13 +149,11 @@ window.editTask = async (id: number) => {
           status: (document.querySelector<HTMLSelectElement>('#modal-task-status')!).value as 'todo' | 'doing' | 'done',
       };
 
-      // Validate estimated time
       if (!isValidInterval(updatedTask.estimated_time || "")) {
         alert('Invalid estimated time format. Use format like "2h 30m".');
         return;
       }
 
-      // Automatically move task to 'doing' if responsible user is assigned
       if (updatedTask.responsible_user_id && updatedTask.status === 'todo') {
         updatedTask.status = 'doing';
         updatedTask.start_time = new Date().toISOString();

@@ -40,7 +40,6 @@ export class StoryService {
 
   static async update(story: Partial<Story> & { id: number }): Promise<Story> {
     const updateData = { ...story };
-    // Remove fields if not provided
     if (updateData.owner_id === '') delete updateData.owner_id;
     if (updateData.project_id === null || updateData.project_id === undefined) delete updateData.project_id;
     const { data, error } = await supabase.from(this.table).update(updateData).eq('id', story.id).single();

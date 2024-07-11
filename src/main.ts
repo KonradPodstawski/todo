@@ -29,7 +29,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </div>
 `;
 
-
 setupAuth();
 checkAuthStatus();
 setupModal();
