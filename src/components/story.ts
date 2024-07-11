@@ -1,12 +1,11 @@
 import { StoryService, Story } from '../services/StoryService.ts';
-import { UserService, User } from '../services/UserService.ts';
+import { UserService } from '../services/UserService.ts';
 import { ProjectService } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showModal } from './modal.ts';
 import { showTasksForStory } from './task.ts';
 
 let currentProjectId: number | null = null;
-let currentStoryId: number | null = null;
 
 export function getStoryHtml() {
   return `
@@ -182,7 +181,6 @@ window.infoStory = async (id: number) => {
 }
 
 window.selectStory = async (id: number) => {
-  currentStoryId = id;
   document.querySelector<HTMLDivElement>('#story-container')!.classList.add('hidden');
   document.querySelector<HTMLDivElement>('#task-container')!.classList.remove('hidden');
   await showTasksForStory(id);

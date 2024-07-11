@@ -1,5 +1,5 @@
 import { TaskService, Task } from '../services/TaskService.ts';
-import { UserService, User } from '../services/UserService.ts';
+import { UserService } from '../services/UserService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showModal } from './modal.ts';
 
@@ -152,7 +152,7 @@ window.editTask = async (id: number) => {
       };
 
       // Validate estimated time
-      if (!isValidInterval(updatedTask.estimated_time)) {
+      if (!isValidInterval(updatedTask.estimated_time || "")) {
         alert('Invalid estimated time format. Use format like "2h 30m".');
         return;
       }

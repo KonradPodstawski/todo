@@ -1,10 +1,8 @@
-import { ProjectService, Project } from '../services/ProjectService.ts';
+import { ProjectService } from '../services/ProjectService.ts';
 import { getNextID } from '../utils/utils.ts';
 import { showStoriesForProject } from './story.ts';
 import { loadUsers } from './task.ts';
 import { showModal } from './modal.ts';
-
-let currentProjectId: number | null = null;
 
 export function getProjectHtml() {
   return `
@@ -90,7 +88,6 @@ window.infoProject = async (id: number) => {
 }
 
 window.selectProject = async (id: number) => {
-  currentProjectId = id;
   document.querySelector<HTMLDivElement>('#project-container')!.classList.add('hidden');
   document.querySelector<HTMLDivElement>('#story-container')!.classList.remove('hidden');
   await showStoriesForProject(id);

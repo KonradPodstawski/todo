@@ -9,9 +9,9 @@ export interface Task {
   estimated_time: string;
   status: 'todo' | 'doing' | 'done';
   created_at: string;
-  start_time?: string;
-  end_time?: string;
-  responsible_user_id?: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  responsible_user_id: string | null;
 }
 
 export class TaskService {
@@ -44,11 +44,11 @@ export class TaskService {
   static async update(task: Partial<Task> & { id: number }): Promise<Task> {
     const updateData = { ...task };
 
-    // Remove fields if not provided
+    if (updateData === null || updateData === undefined) throw new Error('Task not found');
+
     if (updateData.responsible_user_id === '') delete updateData.responsible_user_id;
     if (updateData.story_id === null || updateData.story_id === undefined) delete updateData.story_id;
 
-    // Apply constraint logic
     if (updateData.status === 'todo') {
       updateData.start_time = null;
       updateData.end_time = null;

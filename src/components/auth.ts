@@ -34,10 +34,8 @@ export function getAuthHtml() {
       </div>
       <div id="auth-message" class="mt-4 text-red-500 dark:text-red-400"></div>
     `;
-  }
+}
   
-  
-
 export async function signUp(email: string, password: string, firstName: string, lastName: string): Promise<{ message?: string, error?: string }> {
     const { data: user, error } = await supabase.auth.signUp({
         email,
@@ -48,7 +46,7 @@ export async function signUp(email: string, password: string, firstName: string,
         return { error: error.message };
     }
 
-    const { data, error: dbError } = await supabase
+    const { error: dbError } = await supabase
         .from('users')
         .insert([{ id: user.user!.id, first_name: firstName, last_name: lastName, role: 'developer' }]);
 
@@ -154,7 +152,7 @@ export function setupAuth() {
             e.preventDefault();
             const email = (document.querySelector<HTMLInputElement>('#login-email')!).value;
             const password = (document.querySelector<HTMLInputElement>('#login-password')!).value;
-            const { data, error } = await logIn(email, password);
+            const { error: error } = await logIn(email, password);
             const authMessage = document.querySelector<HTMLDivElement>('#auth-message');
             if (authMessage) {
                 if (error) {

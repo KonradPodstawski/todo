@@ -2,7 +2,7 @@ import { UserService } from '../services/UserService.ts';
 
 export function getHeaderBarHtml() {
   return `
-    <div id="header-bar" class="bg-gray-800 text-white p-4 flex justify-between items-center hidden dark:bg-gray-900">
+    <div id="header-bar" class="bg-gray-800 text-white p-4 justify-between items-center hidden dark:bg-gray-900">
         <button id="theme-toggle" class="flex top-4 right-4 p-2 bg-gray-200 dark:bg-gray-800 rounded">
           Toggle Dark Mode
         </button>
